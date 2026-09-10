@@ -8,7 +8,7 @@ All symbols live in `livekit.plugins.synthesia`.
 | --- | --- | --- | --- |
 | `avatar_config` | `AvatarConfig` | required | Avatar identity and rendering options. |
 | `api_key` | `str \| None` | `None` | Synthesia workspace API key. Falls back to `SYNTHESIA_API_KEY`. |
-| `api_url` | `str \| None` | `None` | API base URL. Falls back to `SYNTHESIA_API_URL`, then `https://api.synthesia.io`. |
+| `api_url` | `str \| None` | `None` | API base URL. Falls back to `SYNTHESIA_API_URL`, then `https://developers.synthesia.io`. |
 | `join_timeout` | `float` | `30.0` | Seconds to wait for the avatar to join and publish before raising `SynthesiaTimeoutError`. |
 
 ## `synthesia.AvatarConfig`

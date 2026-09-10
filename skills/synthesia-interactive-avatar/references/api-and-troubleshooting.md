@@ -43,13 +43,16 @@ avatar.on("error", lambda exc: ...)
 | --- | --- | --- |
 | `SynthesiaError` | Base class; also raised for missing credentials. | no |
 | `SynthesiaAuthError` | Invalid/expired key or workspace without Interactive Avatar access (HTTP 401/403). | no |
+| `InvalidRoomTokenError` | The minted room token can't produce a joined session — malformed, or missing the attribute naming the agent the avatar publishes for (`invalid_token`). Distinct from `SynthesiaAuthError`: the Synthesia key is fine. | no |
+| `LiveKitCredentialsRejectedError` | Token is well formed but the LiveKit project rejected it (`invalid_livekit_credentials`) — check the LiveKit key/secret, not the Synthesia key. | no |
+| `InvalidSessionRequestError` | The backend rejected the session request payload (`validation_error` / `bad_request`). | no |
 | `UnknownAvatarError` | An id in `avatar_ids` not accessible to the workspace (404 / `unknown_avatar` / `avatar_not_accessible`), or a `swap_avatar()` target that wasn't in `avatar_ids`. | no |
 | `QuotaExceededError` | Minute or concurrent-session cap hit (HTTP 402). | no |
 | `RateLimitedError` | Throttled (HTTP 429); carries `retry_after` (seconds) when provided. | yes |
 | `SynthesiaTimeoutError` | Avatar didn't join within `join_timeout`. | yes |
 | `SynthesiaConnectionError` | Transport failure after retries, or avatar dropped mid-session. | yes |
 
-Retry guidance: back off and retry only the retryable three. Honour `retry_after` on 429s. For timeouts, raise `join_timeout` before retrying — cold starts are the usual cause. Never wrap auth/quota/unknown-avatar errors in retry loops; surface them to the user with the fix.
+Retry guidance: back off and retry only the retryable three. Honour `retry_after` on 429s. For timeouts, raise `join_timeout` before retrying — cold starts are the usual cause. Never wrap auth/quota/unknown-avatar/token/validation errors in retry loops; surface them to the user with the fix.
 
 ## Troubleshooting matrix
 
@@ -60,6 +63,9 @@ Retry guidance: back off and retry only the retryable three. Honour `retry_after
 | `SynthesiaAuthError` | Key invalid/expired, or workspace lacks Interactive Avatar access. | Confirm the key; confirm workspace access with Synthesia support. |
 | `SynthesiaError: avatar_ids must be a list of ids, not a single string` | `AvatarConfig(avatar_ids="<id>")` with a bare string. | Wrap it in a list: `avatar_ids=["<id>"]`. |
 | `SynthesiaError: livekit_url ... is not a ws:// or wss:// URL` | Malformed `LIVEKIT_URL` that can't be normalized to `ws(s)://`. | Use the project's `wss://` URL (`https://` is auto-normalized and fine). |
+| `InvalidRoomTokenError` at `start()` | Synthesia rejected the room token the plugin minted — malformed or missing the agent attribute. Not a Synthesia-key problem. | Connect the room (local participant needs an identity) before `avatar.start()`; if that's already the case, upgrade the plugin. |
+| `LiveKitCredentialsRejectedError` at `start()` | LiveKit key/secret don't match the project at `LIVEKIT_URL` — the token mints fine locally, then LiveKit refuses the avatar's join. | Fix `LIVEKIT_API_KEY` / `LIVEKIT_API_SECRET` to the project `LIVEKIT_URL` points at. The Synthesia key is not the problem. |
+| `InvalidSessionRequestError` | Backend rejected the session request payload. | Check `avatar_ids` are the raw gallery ids from Synthesia; the exception message and `body` name the offending field. |
 | `UnknownAvatarError` at `start()` | Avatar id not in the workspace gallery / not on the tier. | Use Ada's id (the default); otherwise check access with Synthesia support. |
 | `UnknownAvatarError: ... not in initial list of avatar_ids` on `swap_avatar()` | Target id wasn't passed to `AvatarConfig`. | Include every swappable id (max 5) in `avatar_ids` up front; adding one requires a new session. |
 | `SynthesiaError: swap_avatar() requires a started avatar session` | `swap_avatar()` called before `start()` or during/after shutdown. | Only swap while the session is live. |

@@ -20,7 +20,7 @@ These shape every recommendation. State them to the user up front if they're rel
 
 - **Access-gated.** The API key must come from a Synthesia workspace with Interactive Avatar access; other keys are rejected by the avatar worker (`SynthesiaAuthError`). If the user has no key, stop and point them to the [Synthesia developer console](https://docs.synthesia.io/reference/synthesia-api-quickstart) — nothing you build will run without it.
 - **Python only.** The plugin targets the Python LiveKit Agents framework, Python 3.10+. Node.js agents are not supported.
-- **Default avatar:** Ada, `"03cee7ec-ac90-45ec-8c20-74a399cf3dc4"`. `AvatarConfig` takes `avatar_ids`: a list of one to five gallery ids. The first is the active avatar; the rest are precomputed so `swap_avatar()` can switch to them mid-session. Use Ada alone unless the user names other avatars available to their workspace — inaccessible ids raise `UnknownAvatarError`, and a bare string instead of a list raises `SynthesiaError`.
+- **Default avatar:** Kenji, `"7572faa9-15da-400d-8227-ef1ab8932523"`. `AvatarConfig` takes `avatar_ids`: a list of one to five gallery ids. The first is the active avatar; the rest are precomputed so `swap_avatar()` can switch to them mid-session. Use Kenji alone unless the user names other avatars available to their workspace — inaccessible ids raise `UnknownAvatarError`, and a bare string instead of a list raises `SynthesiaError`.
 - **No sandbox.** Unlike some competitors, there is no free sandbox avatar — every session counts against the workspace's quota (`QuotaExceededError`, HTTP 402, on cap).
 - **Install from PyPI:** `pip install "livekit-agents[synthesia]~=1.5"` (or the `uv add` equivalent).
 
@@ -106,7 +106,7 @@ Works identically for realtime and pipeline agents — the component intercepts 
 from livekit.plugins import synthesia
 
 avatar = synthesia.AvatarSession(
-    synthesia.AvatarConfig(avatar_ids=["03cee7ec-ac90-45ec-8c20-74a399cf3dc4"]),  # Ada
+    synthesia.AvatarConfig(avatar_ids=["7572faa9-15da-400d-8227-ef1ab8932523"]),  # Kenji
 )
 await avatar.start(session, room=ctx.room)
 ```
@@ -134,7 +134,7 @@ LiveKit standardised the avatar-plugin pattern, so this is usually a three-line 
 | Their code | Replace with |
 |------------|--------------|
 | `from livekit.plugins import tavus` (or `bey`, `hedra`, `heygen`) | `from livekit.plugins import synthesia` |
-| `tavus.AvatarSession(replica_id=..., persona_id=...)` etc. | `synthesia.AvatarSession(synthesia.AvatarConfig(avatar_ids=["03cee7ec-ac90-45ec-8c20-74a399cf3dc4"]))` |
+| `tavus.AvatarSession(replica_id=..., persona_id=...)` etc. | `synthesia.AvatarSession(synthesia.AvatarConfig(avatar_ids=["7572faa9-15da-400d-8227-ef1ab8932523"]))` |
 | `TAVUS_API_KEY` / provider env vars | `SYNTHESIA_API_KEY` |
 
 Keep their `await avatar.start(session, room=ctx.room)` call and its position. Remove the old plugin extra from dependencies, add the synthesia extra.

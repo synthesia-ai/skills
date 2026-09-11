@@ -56,7 +56,7 @@ async def entrypoint(ctx: JobContext):
 
     # Attach the avatar BEFORE session.start() — order matters.
     avatar = synthesia.AvatarSession(
-        synthesia.AvatarConfig(avatar_ids=["03cee7ec-ac90-45ec-8c20-74a399cf3dc4"]),  # Ada
+        synthesia.AvatarConfig(avatar_ids=["7572faa9-15da-400d-8227-ef1ab8932523"]),  # Kenji
     )
     await avatar.start(session, room=ctx.room)
 
@@ -101,7 +101,7 @@ async def entrypoint(ctx: JobContext):
     )
 
     avatar = synthesia.AvatarSession(
-        synthesia.AvatarConfig(avatar_ids=["03cee7ec-ac90-45ec-8c20-74a399cf3dc4"]),  # Ada
+        synthesia.AvatarConfig(avatar_ids=["7572faa9-15da-400d-8227-ef1ab8932523"]),  # Kenji
     )
     await avatar.start(session, room=ctx.room)
 
@@ -130,7 +130,7 @@ To switch avatars mid-session, pass up to five ids in `avatar_ids` and call `awa
 
 The avatar joins as a **regular LiveKit participant**, so any LiveKit client renders it with zero Synthesia-specific code. Pick the first option that fits:
 
-1. **Zero setup — LiveKit Cloud Agent Console.** In the LiveKit Cloud dashboard, open the same project the agent connects to → **Agents** → **Console**, select the agent from the dropdown by its `agent_name` (`synthesia-avatar-agent` in the boilerplate), and hit **Start session**. This is a real browser room that renders video for avatar agents — Ada appears here directly. Do **not** suggest `agents-playground.livekit.io`: the hosted playground is deprecated and now redirects to the Agent Console.
+1. **Zero setup — LiveKit Cloud Agent Console.** In the LiveKit Cloud dashboard, open the same project the agent connects to → **Agents** → **Console**, select the agent from the dropdown by its `agent_name` (`synthesia-avatar-agent` in the boilerplate), and hit **Start session**. This is a real browser room that renders video for avatar agents — Kenji appears here directly. Do **not** suggest `agents-playground.livekit.io`: the hosted playground is deprecated and now redirects to the Agent Console.
 2. **User already has a LiveKit frontend** → done. The avatar's video track appears alongside other participants (with `useVoiceAssistant`, it surfaces as the agent's video).
 3. **Fastest path to a real product frontend** → clone the [interactive-avatar-quickstarts/minimal](https://github.com/synthesia-ai/interactive-avatar-quickstarts/tree/main/minimal) repo. Crib the frontend and token endpoint (`index.html` + `server.py`, including `sync_streams=True`); its agent is latency-tuned (Cartesia voices, preflight speculation) rather than this guide's minimal template — the avatar lines are identical either way.
 4. **Building their own** → LiveKit's [frontend guide](https://docs.livekit.io/agents/start/frontend/) and the React [`useVoiceAssistant`](https://docs.livekit.io/reference/components/react/hook/usevoiceassistant/) hook. The frontend needs a token endpoint (standard LiveKit access token minted server-side); it must never see `SYNTHESIA_API_KEY`. Mint tokens with `sync_streams=True` in the room config — it keeps the avatar's audio and video in sync in the browser (see `server.py` in the quickstart repo for the pattern).
@@ -145,7 +145,7 @@ The avatar joins as a **regular LiveKit participant**, so any LiveKit client ren
 python agent.py dev
 ```
 
-Then test in the **LiveKit Cloud Agent Console** (or the user's frontend): dashboard → same project → Agents → Console → select `synthesia-avatar-agent` from the agent dropdown → **Start session**. Speak; Ada should appear and lip-sync the replies.
+Then test in the **LiveKit Cloud Agent Console** (or the user's frontend): dashboard → same project → Agents → Console → select `synthesia-avatar-agent` from the agent dropdown → **Start session**. Speak; Kenji should appear and lip-sync the replies.
 
 **Careful with the word "console" — there are two, and they behave oppositely:**
 

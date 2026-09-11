@@ -15,7 +15,7 @@ All symbols live in `livekit.plugins.synthesia`.
 
 | Field | Type | Default | Description |
 | --- | --- | --- | --- |
-| `avatar_ids` | `Sequence[str]` | required | One to five gallery ids of avatars available to the workspace. The first is the active avatar; the rest are precomputed so `swap_avatar()` can switch to them. Default avatar: **Ada**, `03cee7ec-ac90-45ec-8c20-74a399cf3dc4`. Inaccessible ids raise `UnknownAvatarError` at `start()`; a bare string instead of a list raises `SynthesiaError`. |
+| `avatar_ids` | `Sequence[str]` | required | One to five gallery ids of avatars available to the workspace. The first is the active avatar; the rest are precomputed so `swap_avatar()` can switch to them. Default avatar: **Kenji**, `7572faa9-15da-400d-8227-ef1ab8932523`. Inaccessible ids raise `UnknownAvatarError` at `start()`; a bare string instead of a list raises `SynthesiaError`. |
 
 ## Methods
 
@@ -66,7 +66,7 @@ Retry guidance: back off and retry only the retryable three. Honour `retry_after
 | `InvalidRoomTokenError` at `start()` | Synthesia rejected the room token the plugin minted — malformed or missing the agent attribute. Not a Synthesia-key problem. | Connect the room (local participant needs an identity) before `avatar.start()`; if that's already the case, upgrade the plugin. |
 | `LiveKitCredentialsRejectedError` at `start()` | LiveKit key/secret don't match the project at `LIVEKIT_URL` — the token mints fine locally, then LiveKit refuses the avatar's join. | Fix `LIVEKIT_API_KEY` / `LIVEKIT_API_SECRET` to the project `LIVEKIT_URL` points at. The Synthesia key is not the problem. |
 | `InvalidSessionRequestError` | Backend rejected the session request payload. | Check `avatar_ids` are the raw gallery ids from Synthesia; the exception message and `body` name the offending field. |
-| `UnknownAvatarError` at `start()` | Avatar id not in the workspace gallery / not on the tier. | Use Ada's id (the default); otherwise check access with Synthesia support. |
+| `UnknownAvatarError` at `start()` | Avatar id not in the workspace gallery / not on the tier. | Use Kenji's id (the default); otherwise check access with Synthesia support. |
 | `UnknownAvatarError: ... not in initial list of avatar_ids` on `swap_avatar()` | Target id wasn't passed to `AvatarConfig`. | Include every swappable id (max 5) in `avatar_ids` up front; adding one requires a new session. |
 | `SynthesiaError: swap_avatar() requires a started avatar session` | `swap_avatar()` called before `start()` or during/after shutdown. | Only swap while the session is live. |
 | `QuotaExceededError` | Minute or concurrency cap hit. | Reduce concurrent sessions or ask Synthesia support about limits. |

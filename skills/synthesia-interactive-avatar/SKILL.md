@@ -112,14 +112,7 @@ avatar = synthesia.AvatarSession(
 await avatar.start(session, room=ctx.room)
 ```
 
-4. Optionally register lifecycle handlers:
-
-```python
-avatar.on("session_ended", lambda: ...)          # room ended cleanly
-avatar.on("error", lambda exc: ...)              # avatar track dropped mid-session
-```
-
-5. If the user wants to switch avatars mid-session, pass every id up front (max five — only precomputed ids can be swapped in) and call:
+4. If the user wants to switch avatars mid-session, pass every id up front (max five — only precomputed ids can be swapped in) and call:
 
 ```python
 await avatar.swap_avatar("<another-id-from-avatar-ids>")  # switch mid-session

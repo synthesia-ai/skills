@@ -10,6 +10,8 @@ All symbols live in `livekit.plugins.synthesia`.
 | `api_key` | `str \| None` | `None` | Synthesia workspace API key. Falls back to `SYNTHESIA_API_KEY`. |
 | `api_url` | `str \| None` | `None` | API base URL. Falls back to `SYNTHESIA_API_URL`, then `https://developers.synthesia.io`. |
 | `join_timeout` | `float` | `30.0` | Seconds to wait for the avatar to join and publish before raising `SynthesiaError` with `type` `TIMEOUT`. |
+| `avatar_participant_identity` | `str \| None` | `synthesia-avatar-agent` | LiveKit identity the avatar joins under; must differ per avatar when several share a room. |
+| `avatar_participant_name` | `str \| None` | `Synthesia avatar` | Display name of the avatar participant. |
 
 ## `synthesia.AvatarConfig`
 
@@ -23,19 +25,11 @@ All symbols live in `livekit.plugins.synthesia`.
 | --- | --- |
 | `await avatar.start(session, room, *, livekit_url=None, livekit_api_key=None, livekit_api_secret=None)` | Mounts the avatar into `room`, launches the worker, wires `session.output.audio`. Returns once the avatar has joined and published video. **Call before `AgentSession.start()`.** LiveKit credentials fall back to `LIVEKIT_URL` / `LIVEKIT_API_KEY` / `LIVEKIT_API_SECRET`. |
 | `await avatar.swap_avatar(avatar_id, *, timeout=15.0)` | Switches the rendered avatar mid-session to another id from `avatar_ids`, or back to the first id with `"default"`. Returns the now-active id. Requires a started session (untyped `SynthesiaError` otherwise); an id not in `avatar_ids` raises `type` `UNKNOWN_AVATAR`; RPC failure raises `type` `CONNECTION`. |
-| `await avatar.aclose()` | Cooperative shutdown; restores audio routing. Called automatically on room disconnect. |
+| `await avatar.aclose()` | Cooperative shutdown; closes the avatar audio sink. Called automatically when the room disconnects or the avatar leaves unexpectedly. |
 
 ## Events
 
-| Event | Fires when |
-| --- | --- |
-| `session_ended` | The room ended cleanly. |
-| `error` | The avatar track dropped unexpectedly mid-session (carries a `SynthesiaConnectionError`). |
-
-```python
-avatar.on("session_ended", lambda: ...)
-avatar.on("error", lambda exc: ...)
-```
+None. A clean room end logs `avatar session ended`; the avatar dropping mid-session logs `avatar left the room unexpectedly`. Both tear the session down automatically.
 
 ## Exceptions
 

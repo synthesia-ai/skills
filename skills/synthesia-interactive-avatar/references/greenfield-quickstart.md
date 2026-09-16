@@ -15,10 +15,10 @@ Use this when the user has **no existing LiveKit Agent**. Output: a runnable Pyt
 
 ```bash
 mkdir avatar-agent && cd avatar-agent
-uv init && uv add "livekit-agents[synthesia,openai,silero]~=1.8" python-dotenv
+uv init && uv add "livekit-agents[openai,silero]~=1.8" "livekit-plugins-synthesia~=1.8" python-dotenv
 ```
 
-pip equivalent: `pip install "livekit-agents[synthesia,openai,silero]~=1.8" python-dotenv`
+pip equivalent: `pip install "livekit-agents[openai,silero]~=1.8" "livekit-plugins-synthesia~=1.8" python-dotenv`
 
 `.env` (never commit; load via a secret manager in production):
 

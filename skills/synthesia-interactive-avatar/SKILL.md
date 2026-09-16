@@ -22,7 +22,7 @@ These shape every recommendation. State them to the user up front if they're rel
 - **Python only.** The plugin targets the Python LiveKit Agents framework, Python 3.10+. Node.js agents are not supported.
 - **Default avatar:** Kenji, `"7572faa9-15da-400d-8227-ef1ab8932523"`. `AvatarConfig` takes `avatar_ids`: a list of one to five gallery ids. The first is the active avatar; the rest are precomputed so `swap_avatar()` can switch to them mid-session. Use Kenji alone unless the user names other avatars available to their workspace — inaccessible ids raise `SynthesiaError` with `type` `UNKNOWN_AVATAR` at `start()`, and a bare string instead of a list raises `ValueError`.
 - **No sandbox.** Unlike some competitors, there is no free sandbox avatar — every session counts against the workspace's quota (`SynthesiaError` with `type` `QUOTA_EXCEEDED`, HTTP 402, on cap).
-- **Install from PyPI:** `pip install "livekit-agents[synthesia]~=1.8"` (or the `uv add` equivalent).
+- **Install from PyPI:** `pip install "livekit-plugins-synthesia~=1.8"` (or the `uv add` equivalent).
 
 ## Step 1: Discover what the user has
 
@@ -44,7 +44,7 @@ Check the codebase and conversation before asking anything. **Do not ask questio
 | `OPENAI_API_KEY` | `.env` | Can default to OpenAI Realtime for greenfield |
 | LiveKit client SDK / `useVoiceAssistant` | frontend code | Has a LiveKit frontend — avatar appears there automatically |
 | Python version | `pyproject.toml`, `python --version` | Must be 3.10+ |
-| `livekit-agents` version | `pyproject.toml`, lockfile, `pip show livekit-agents` | Must be ≥ 1.8.2 — the `synthesia` extra doesn't exist earlier |
+| `livekit-agents` version | `pyproject.toml`, lockfile, `pip show livekit-agents` | Must be ≥ 1.8.2 — the plugin requires it |
 
 ### Questions to ask (only what's still unknown)
 
@@ -99,7 +99,7 @@ Then tell the user what you recommend and why, in 2–3 sentences, and proceed d
 
 Works identically for realtime and pipeline agents — the component intercepts `session.output.audio` regardless of what produces it.
 
-1. Install: `uv add "livekit-agents[synthesia]~=1.8"` (or pip equivalent). Raise any `livekit-agents` pin below 1.8.2 first.
+1. Install: `uv add "livekit-plugins-synthesia~=1.8"` (or pip equivalent). Raise any `livekit-agents` pin below 1.8.2 first; the plugin requires it.
 2. Add `SYNTHESIA_API_KEY` to the agent's environment (secret manager or `.env` — never hard-code, never in frontend code).
 3. In the entrypoint, after building `AgentSession` and **before** `session.start(...)`:
 

@@ -5,7 +5,7 @@ description: |
 license: MIT
 metadata:
   author: synthesia
-  version: "1.4.0"
+  version: "1.5.0"
 ---
 
 # Synthesia Interactive Avatar Integration

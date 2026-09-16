@@ -1,11 +1,11 @@
 ---
 name: synthesia-interactive-avatar
 description: |
-  Integrate the Synthesia Interactive Avatar into a LiveKit Agent end-to-end — detects the user's existing LiveKit setup and attaches the avatar with the three-line pattern, or scaffolds a complete boilerplate voice agent if none exists. Use when: (1) adding a real-time, interactive, conversational, or lip-sync avatar to a LiveKit agent, app, or site, or switching/swapping avatars mid-session, (2) the user mentions the Synthesia avatar plugin, livekit-plugins-synthesia, synthesia.AvatarSession, or the Interactive Avatar, (3) migrating from another avatar provider (HeyGen LiveAvatar, Tavus, Beyond Presence, Hedra) to Synthesia, (4) debugging Synthesia avatar issues — SynthesiaAuthError, UnknownAvatarError, avatar never joins, avatar joins but no lip-sync, (5) building any voice agent where the user wants a human face on it, even if they don't name Synthesia explicitly.
+  Integrate the Synthesia Interactive Avatar into a LiveKit Agent end-to-end — detects the user's existing LiveKit setup and attaches the avatar with the three-line pattern, or scaffolds a complete boilerplate voice agent if none exists. Use when: (1) adding a real-time, interactive, conversational, or lip-sync avatar to a LiveKit agent, app, or site, or switching/swapping avatars mid-session, (2) the user mentions the Synthesia avatar plugin, livekit-plugins-synthesia, synthesia.AvatarSession, or the Interactive Avatar, (3) migrating from another avatar provider (HeyGen LiveAvatar, Tavus, Beyond Presence, Hedra) to Synthesia, (4) debugging Synthesia avatar issues — SynthesiaError (type AUTH, UNKNOWN_AVATAR, TIMEOUT, ...), avatar never joins, avatar joins but no lip-sync, (5) building any voice agent where the user wants a human face on it, even if they don't name Synthesia explicitly.
 license: MIT
 metadata:
   author: synthesia
-  version: "1.4.0"
+  version: "1.5.0"
 ---
 
 # Synthesia Interactive Avatar Integration
@@ -18,11 +18,11 @@ This skill assesses what the user already has, picks ONE integration pathway, an
 
 These shape every recommendation. State them to the user up front if they're relevant:
 
-- **Access-gated.** The API key must come from a Synthesia workspace with Interactive Avatar access; other keys are rejected by the avatar worker (`SynthesiaAuthError`). If the user has no key, stop and point them to the [Synthesia developer console](https://docs.synthesia.io/reference/synthesia-api-quickstart) — nothing you build will run without it.
+- **Access-gated.** The API key must come from a Synthesia workspace with Interactive Avatar access; other keys are rejected (`SynthesiaError`, `type` `AUTH` or `FEATURE_NOT_IN_PLAN`). If the user has no key, stop and point them to the [Synthesia developer console](https://docs.synthesia.io/reference/synthesia-api-quickstart) — nothing you build will run without it.
 - **Python only.** The plugin targets the Python LiveKit Agents framework, Python 3.10+. Node.js agents are not supported.
-- **Default avatar:** Kenji, `"7572faa9-15da-400d-8227-ef1ab8932523"`. `AvatarConfig` takes `avatar_ids`: a list of one to five gallery ids. The first is the active avatar; the rest are precomputed so `swap_avatar()` can switch to them mid-session. Use Kenji alone unless the user names other avatars available to their workspace — inaccessible ids raise `UnknownAvatarError`, and a bare string instead of a list raises `SynthesiaError`.
-- **No sandbox.** Unlike some competitors, there is no free sandbox avatar — every session counts against the workspace's quota (`QuotaExceededError`, HTTP 402, on cap).
-- **Install from PyPI:** `pip install "livekit-agents[synthesia]~=1.5"` (or the `uv add` equivalent).
+- **Default avatar:** Kenji, `"7572faa9-15da-400d-8227-ef1ab8932523"`. `AvatarConfig` takes `avatar_ids`: a list of one to five gallery ids. The first is the active avatar; the rest are precomputed so `swap_avatar()` can switch to them mid-session. Use Kenji alone unless the user names other avatars available to their workspace — inaccessible ids raise `SynthesiaError` with `type` `UNKNOWN_AVATAR` at `start()`, and a bare string instead of a list raises `ValueError`.
+- **No sandbox.** Unlike some competitors, there is no free sandbox avatar — every session counts against the workspace's quota (`SynthesiaError` with `type` `QUOTA_EXCEEDED`, HTTP 402, on cap).
+- **Install from PyPI:** `pip install "livekit-plugins-synthesia~=1.8"` (or the `uv add` equivalent).
 
 ## Step 1: Discover what the user has
 
@@ -44,6 +44,7 @@ Check the codebase and conversation before asking anything. **Do not ask questio
 | `OPENAI_API_KEY` | `.env` | Can default to OpenAI Realtime for greenfield |
 | LiveKit client SDK / `useVoiceAssistant` | frontend code | Has a LiveKit frontend — avatar appears there automatically |
 | Python version | `pyproject.toml`, `python --version` | Must be 3.10+ |
+| `livekit-agents` version | `pyproject.toml`, lockfile, `pip show livekit-agents` | Must be ≥ 1.8.2 — the plugin requires it |
 
 ### Questions to ask (only what's still unknown)
 
@@ -98,7 +99,7 @@ Then tell the user what you recommend and why, in 2–3 sentences, and proceed d
 
 Works identically for realtime and pipeline agents — the component intercepts `session.output.audio` regardless of what produces it.
 
-1. Install: `uv add "livekit-agents[synthesia]~=1.5"` (or pip equivalent).
+1. Install: `uv add "livekit-plugins-synthesia~=1.8"` (or pip equivalent). Raise any `livekit-agents` pin below 1.8.2 first; the plugin requires it.
 2. Add `SYNTHESIA_API_KEY` to the agent's environment (secret manager or `.env` — never hard-code, never in frontend code).
 3. In the entrypoint, after building `AgentSession` and **before** `session.start(...)`:
 
@@ -111,14 +112,7 @@ avatar = synthesia.AvatarSession(
 await avatar.start(session, room=ctx.room)
 ```
 
-4. Optionally register lifecycle handlers:
-
-```python
-avatar.on("session_ended", lambda: ...)          # room ended cleanly
-avatar.on("error", lambda exc: ...)              # avatar track dropped mid-session
-```
-
-5. If the user wants to switch avatars mid-session, pass every id up front (max five — only precomputed ids can be swapped in) and call:
+4. If the user wants to switch avatars mid-session, pass every id up front (max five — only precomputed ids can be swapped in) and call:
 
 ```python
 await avatar.swap_avatar("<another-id-from-avatar-ids>")  # switch mid-session
@@ -152,8 +146,8 @@ Read `references/greenfield-quickstart.md` and follow it. It contains the full `
 - **Match the voice to the avatar.** The avatar lip-syncs whatever voice the model produces — a mismatched persona (e.g. a female-presenting voice on a male-presenting avatar) reads as broken. Propose a voice that fits from the provider's list ([OpenAI Realtime](https://platform.openai.com/docs/guides/realtime), [OpenAI TTS](https://platform.openai.com/docs/guides/text-to-speech), or the user's TTS provider) and confirm with the user rather than shipping a default.
 - **The API key stays in the agent process.** It is a workspace-bound secret. If you see `SYNTHESIA_API_KEY` heading toward frontend code, stop and restructure.
 - **Two different "consoles" — never conflate them.** The *terminal* run mode (`python agent.py console`) is a local mock room: the avatar will never appear there and no error is raised. The **LiveKit Cloud Agent Console** (dashboard → project → Agents → Console) is the opposite — a real browser room that renders video for avatar agents, and the fastest place to test. So: run with `dev`, test in the Agent Console. When talking to the user, say "terminal `console` run mode" vs "LiveKit Cloud Agent Console" explicitly — a bare "don't use console" will be read as a warning against the very tool they should be using.
-- **Fail fast on access.** Verify the API key works before writing lots of code: a quick `dev`-mode run surfaces `SynthesiaAuthError` (no Interactive Avatar access) immediately.
-- **Respect retryability.** `RateLimitedError` (honour `retry_after`), `SynthesiaTimeoutError` (raise `join_timeout` — cold starts happen) and `SynthesiaConnectionError` are retryable. Auth, quota, and unknown-avatar errors are not — don't wrap them in retry loops.
+- **Fail fast on access.** Verify the API key works before writing lots of code: a quick `dev`-mode run surfaces `SynthesiaError` with `type` `AUTH` or `FEATURE_NOT_IN_PLAN` (no Interactive Avatar access) immediately.
+- **Respect retryability.** Branch on `e.retryable` (`if not e.retryable: raise`). Retryable types: `TIMEOUT` (raise `join_timeout` — cold starts happen), `CONNECTION`, `RATE_LIMITED` and `CONCURRENCY_LIMIT` (honour `e.retry_after`). Everything else is a config problem to surface, not loop.
 
 Full parameter, method, event, and exception tables plus the symptom→fix troubleshooting matrix are in `references/api-and-troubleshooting.md`. Read it whenever an error name appears or behaviour doesn't match expectations.
 

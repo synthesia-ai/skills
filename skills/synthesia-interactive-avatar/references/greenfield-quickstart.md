@@ -5,7 +5,7 @@ Use this when the user has **no existing LiveKit Agent**. Output: a runnable Pyt
 ## Prerequisites — gather before writing code
 
 1. **Synthesia API key** from a workspace with Interactive Avatar access (from the [Synthesia developer console](https://docs.synthesia.io/reference/synthesia-api-quickstart)). Keys without access are rejected — confirm this exists first.
-2. **LiveKit credentials**: `LIVEKIT_URL`, `LIVEKIT_API_KEY`, `LIVEKIT_API_SECRET`. Easiest source is a free LiveKit Cloud project; self-hosted works too.
+2. **LiveKit Cloud project** (free tier works) and the **LiveKit CLI**, which writes `LIVEKIT_URL`, `LIVEKIT_API_KEY` and `LIVEKIT_API_SECRET` into `.env`. If `lk --version` fails, offer to install it: `brew install livekit-cli`, `curl -sSL https://get.livekit.io/cli | bash` (Linux) or `winget install LiveKit.LiveKitCLI`. Self-hosted LiveKit works too, with values set by hand.
 3. **Model provider key(s)**:
    - Default path: an **OpenAI API key** with Realtime access.
    - Pipeline path: keys for whichever STT / LLM / TTS providers the user chose.
@@ -20,15 +20,17 @@ uv init && uv add "livekit-agents[openai,silero]~=1.8" "livekit-plugins-synthesi
 
 pip equivalent: `pip install "livekit-agents[openai,silero]~=1.8" "livekit-plugins-synthesia~=1.8" python-dotenv`
 
-`.env` (never commit; load via a secret manager in production):
+`.env.example` (commit it, never `.env`; load via a secret manager in production):
 
 ```bash
-LIVEKIT_URL=wss://<project>.livekit.cloud
-LIVEKIT_API_KEY=...
-LIVEKIT_API_SECRET=...
-SYNTHESIA_API_KEY=...
-OPENAI_API_KEY=...
+LIVEKIT_URL=
+LIVEKIT_API_KEY=
+LIVEKIT_API_SECRET=
+SYNTHESIA_API_KEY=
+OPENAI_API_KEY=
 ```
+
+Ask the user to run `lk cloud auth` in their own terminal (it needs an interactive one, so you can't), then run `lk app env --write --destination .env --yes` to fill in the LiveKit values. The user adds the other keys to `.env` themselves, not in chat. Without the CLI: `cp .env.example .env` and fill it in by hand.
 
 ## Pick the voice to match the avatar
 
